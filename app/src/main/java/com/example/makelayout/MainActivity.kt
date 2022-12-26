@@ -5,10 +5,12 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,64 +18,63 @@ class MainActivity : AppCompatActivity() {
         val layout = LinearLayout(applicationContext)
         layout.orientation = LinearLayout.VERTICAL
 
-        val params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT)
-        params.weight = 1.toFloat() // единичный вес
+        val margin = 5
+        val paramsPic = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT)
+        paramsPic.weight = 1f // единичный вес
+        paramsPic.setMargins(margin,margin,margin,margin)
+        val paramsRow = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 0)
+        paramsRow.weight = 1f // единичный вес
 
-        // TODO: 3) реализовать переворот карт с "рубашки" на лицевую сторону и обратно
+        val cardMap = mutableMapOf<Int, Int>()
         val colorListener = View.OnClickListener() {
-            it.setBackgroundColor(Color.YELLOW)
+            //Log.d("HELP", "${it.id}")
+            if (it is ImageView) {
+                if (it.tag == "open") {
+                    it.setImageResource(R.drawable.c0)
+                    it.tag = "closed"
+                } else {
+                    it.setImageResource(cardMap[it.id]!!)
+                    it.tag = "open"
+
+                }
+            }
         }
 
         val catViews = ArrayList<ImageView>()
-
-        // TODO: 2) случайным образом разместить 8 пар картинок
-
-        for (i in 1..16) {
-            catViews.add( // вызываем конструктор для создания нового ImageView
+        for (i in 1..8) {
+            val id = applicationContext.resources.getIdentifier("drawable/c$i",
+                "drawable",
+                applicationContext.packageName
+            );
+            for (j in 1..2) {
+                catViews.add(
                     ImageView(applicationContext).apply {
-                        setImageResource(R.drawable.squarecat)
-                        layoutParams = params
+                        //setImageResource(id)
+                        //tag = "open"
+                        setImageResource(R.drawable.c0)
+                        tag = "closed"
+                        setId(1234 + i * 10 + j)
+                        layoutParams = paramsPic
                         setOnClickListener(colorListener)
                     })
+                cardMap[catViews.last().id] = id
+            }
         }
-        val rows = Array(4, { LinearLayout(applicationContext)})
-        var count = 0
-        for (view in catViews) {
+
+        catViews.shuffle()
+        val rows = Array(4) { LinearLayout(applicationContext) }
+        for (row in rows) {
+            row.orientation = LinearLayout.HORIZONTAL
+        }
+        for ((count, view) in catViews.withIndex()) {
             val row: Int = count / 4
             rows[row].addView(view)
-            count ++
         }
         for (row in rows) {
+            row.layoutParams = paramsRow
             layout.addView(row)
         }
 
-        // TODO: 1) заполнить 4 строки элементами из массива catViews по 4 штуки в ряду
- /*
-        val cat2 = ImageView(applicationContext)
-        cat2.setImageResource(R.drawable.squarecat); cat2.layoutParams = params
-        val cat3 = ImageView(applicationContext)
-        cat3.setImageResource(R.drawable.squarecat)
-        val cat4 = ImageView(applicationContext)
-        //cat.layoutParams = ViewGroup.LayoutParams(applicationContext, )
-        cat4.setImageResource(R.drawable.squarecat)
-
-
-
-        val row1 = LinearLayout(applicationContext)
-        row1.orientation = LinearLayout.HORIZONTAL
-        row1.setBackgroundColor(Color.GRAY)
-        row1.addView(cat2); row1.addView(cat);
-
-        val row2 = LinearLayout(applicationContext)
-        row2.orientation = LinearLayout.HORIZONTAL
-        row2.setBackgroundColor(Color.GRAY)
-        row2.addView(cat3); row2.addView(cat4);
-
-        layout.addView(row1); layout.addView(row2)
-
-
-  */
         setContentView(layout)
-        //setContentView(R.layout.activity_main)
     }
 }
